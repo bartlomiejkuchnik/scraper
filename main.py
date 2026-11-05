@@ -35,37 +35,21 @@ def get_salary(text):
 
     return f"{low} - {high} PLN/{unit}"
 
+def get_technologies(soup):
+    container = soup.select_one("div.MuiBox-root.mui-lo8b6p")
+    if not container:
+        return []
 
-TECHNOLOGIES = [
-    "Test Automation",
-    "Java",
-    "Python",
-    "Selenium",
-    "Cucumber",  # poprawna pisownia: Cucumber, nie Cucamber
-    "CI/CD",
-    "BDD",
-    "pytest",
-    "API Testing",
-    "Functional Testing",
-]
+    technologies = []
+    for element in container.select("div.MuiBox-root"):
+        name = element.get_text(strip=True)
+        if name and name not in technologies:
+            technologies.append(name)
+
+    return technologies
 
 
-def get_technologies(text):
-    found = []
 
-    for technology in TECHNOLOGIES:
-        # Wyszukuje całe słowo/frazę, bez rozpoznawania np. "Java"
-        # wewnątrz słowa "JavaScript".
-        pattern = (
-            r"(?<![A-Za-z0-9])"
-            + re.escape(technology)
-            + r"(?![A-Za-z0-9])"
-        )
-
-        if re.search(pattern, text, flags=re.IGNORECASE):
-            found.append(technology)
-
-    return ", ".join(found) if found else "brak danych"
 
 
 
@@ -111,7 +95,7 @@ for number, link in enumerate(title_links[:MAX_OFFERS], start=1):
     offer_text = offer_card.get_text(" ", strip=True)
 
     salary = get_salary(offer_text)
-    technologies = get_technologies(offer_text)
+    technologies = get_technologies(soup)
 
     print(f"{number}. {title}")
     print(f"   Wynagrodzenie: {salary}")
